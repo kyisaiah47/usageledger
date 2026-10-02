@@ -1,0 +1,55 @@
+{
+  "name": "usageledger",
+  "version": "0.1.0",
+  "description": "Token ledger for Claude Code and Codex. Reads the local session logs, stores no paths, and writes to SQLite, DuckDB or BigQuery.",
+  "type": "module",
+  "bin": {
+    "usageledger": "src/cli.js"
+  },
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "examples",
+    "LICENSE",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "scrub": "node scripts/scrub-gate.mjs",
+    "check": "node scripts/scrub-gate.mjs && node --test test/*.test.js"
+  },
+  "devDependencies": {
+    "@duckdb/node-api": "1.5.6-r.1"
+  },
+  "keywords": [
+    "claude-code",
+    "codex",
+    "tokens",
+    "usage",
+    "sqlite",
+    "duckdb",
+    "bigquery",
+    "cli"
+  ],
+  "author": "Compound Labs (https://thecompound.tech)",
+  "license": "MIT",
+  "homepage": "https://github.com/kyisaiah47/usageledger#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kyisaiah47/usageledger.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kyisaiah47/usageledger/issues"
+  }
+}
