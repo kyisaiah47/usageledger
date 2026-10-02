@@ -5,6 +5,7 @@ import path from 'node:path';
 import { sync } from '../src/sync.js';
 import { openSink } from '../src/sinks/index.js';
 import { summary } from '../src/report.js';
+import { defaultCodexGlobs } from '../src/config.js';
 import { EXPECTED, config, copyExamples, tmpDir, byKey, pick } from './helpers.js';
 
 async function readAll(cfg) {
@@ -143,6 +144,43 @@ test('symlinked config dirs are read once', async () => {
   const res = await sync(cfg);
   assert.equal(res.stats.claudeFiles, 3);
   assertMatchesExpected(await readAll(cfg));
+});
+
+test('archived Codex sessions count, and a session moved there counts once', async () => {
+  const logs = copyExamples(tmpDir('ul-logs-'));
+  const sessions = path.join(logs, 'codex/sessions');
+  const archived = path.join(logs, 'codex/archived_sessions');
+  const cfg = config(tmpDir(), {
+    claudeRoot: path.join(logs, 'claude'),
+    codex: [path.join(sessions, '**/*.jsonl'), path.join(archived, '**/*.jsonl')],
+  });
+  await sync(cfg);
+  // Codex archives session C: its file moves out of sessions/.
+  const c = 'rollout-2026-09-02T14-00-00-cccccccc-cccc-4ccc-8ccc-cccccccccccc.jsonl';
+  fs.mkdirSync(archived, { recursive: true });
+  fs.renameSync(path.join(sessions, '2026/09/02', c), path.join(archived, c));
+  // A session that only exists in archived_sessions, and a copy of D present in both places.
+  const d = path.join(sessions, '2026/09/03/rollout-2026-09-03T09-30-00-dddddddd-dddd-4ddd-8ddd-dddddddddddd.jsonl');
+  fs.copyFileSync(d, path.join(archived, 'copy-of-d.jsonl'));
+  const e = fs.readFileSync(d, 'utf8').replaceAll('dddddddd-dddd-4ddd-8ddd-dddddddddddd', 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee').replace(/"timestamp":"2026-09-03T09:31:10/, '"timestamp":"2026-09-03T09:41:10');
+  fs.writeFileSync(path.join(archived, 'rollout-e.jsonl'), e);
+  await sync(cfg);
+  const s = await readAll(cfg);
+  assert.equal(s.totals.claude_code.total_tokens, EXPECTED.by_tool.claude_code.total_tokens);
+  assert.equal(s.totals.codex.total_tokens, EXPECTED.by_tool.codex.total_tokens + 5700);
+  assert.equal(s.totals.codex.sessions, 3);
+  assert.equal(s.totals.codex.turns, 4);
+});
+
+test('the default Codex sources include archived_sessions', () => {
+  const home = process.env.CODEX_HOME;
+  process.env.CODEX_HOME = '/x/codex';
+  try {
+    assert.deepEqual(defaultCodexGlobs(), ['/x/codex/sessions/**/*.jsonl', '/x/codex/archived_sessions/**/*.jsonl']);
+  } finally {
+    if (home === undefined) delete process.env.CODEX_HOME;
+    else process.env.CODEX_HOME = home;
+  }
 });
 
 test('--exclude skips files whose path contains the text', async () => {

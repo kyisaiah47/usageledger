@@ -26,10 +26,12 @@ export function defaultClaudeGlobs() {
   return globs;
 }
 
-// Codex keeps one rollout file per session under $CODEX_HOME/sessions/YYYY/MM/DD.
+// Codex keeps one rollout file per session under $CODEX_HOME/sessions/YYYY/MM/DD, and moves it to
+// $CODEX_HOME/archived_sessions when the session is archived. Both hold real usage. A moved file
+// is read again from its new path, and its rows carry the same row ids, so nothing doubles.
 export function defaultCodexGlobs() {
   const base = process.env.CODEX_HOME || '~/.codex';
-  return [path.join(base, 'sessions/**/*.jsonl')];
+  return [path.join(base, 'sessions/**/*.jsonl'), path.join(base, 'archived_sessions/**/*.jsonl')];
 }
 
 export function systemTimeZone() {

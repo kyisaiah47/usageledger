@@ -4,7 +4,7 @@ UsageLedger counts the tokens Claude Code and Codex use on your computer. It rea
 
 ## What it measures
 
-- Every Claude Code response in `~/.claude*/projects/**/*.jsonl` and every Codex token event in `~/.codex/sessions/**/*.jsonl`.
+- Every Claude Code response in `~/.claude*/projects/**/*.jsonl` and every Codex token event in `~/.codex/sessions/**/*.jsonl` and `~/.codex/archived_sessions/**/*.jsonl`.
 - Input, cache read, cache write, output and reasoning tokens for each response.
 - The same five columns for both tools. Codex counts cached tokens inside its input count, so UsageLedger subtracts them. A Claude Code input token and a Codex input token then mean the same thing.
 - Totals per day, per model, per repo, per origin (the CLI, an SDK, `codex exec`) and per session.
@@ -46,14 +46,14 @@ The first sync reads every log file. Each later sync reads only the bytes a file
 | Flag | What it does |
 |---|---|
 | `--claude <glob>` | Reads Claude Code logs from this glob. Repeat it for more than one. The default is `~/.claude*/projects/**/*.jsonl`, plus `$CLAUDE_CONFIG_DIR/projects` when that is set. |
-| `--codex <glob>` | Reads Codex logs from this glob. The default is `$CODEX_HOME/sessions/**/*.jsonl`, or `~/.codex/sessions/**/*.jsonl`. |
+| `--codex <glob>` | Reads Codex logs from this glob. The default is `sessions/**/*.jsonl` and `archived_sessions/**/*.jsonl` under `$CODEX_HOME`, or under `~/.codex`. |
 | `--exclude <text>` | Skips every file whose path contains this text, ignoring case. Repeat it for more than one. |
 | `--full` | Forgets the byte offsets, reads every file again and rebuilds the ledger. |
 | `--dry-run` | Reads and counts, and writes nothing. |
 | `--raw-cwd` | Also stores the full working directory. |
 | `--tz <zone>` | Uses this time zone for calendar days. The default is your computer's time zone. |
 
-Two config directories that link to one projects folder are read once, because UsageLedger follows each file to its real path.
+Two config directories that link to one projects folder are read once, because UsageLedger follows each file to its real path. Codex moves a session's file to `archived_sessions` when you archive it. The moved file is read again, and its responses keep their row ids, so they count once.
 
 ## Report
 

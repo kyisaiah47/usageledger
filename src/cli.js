@@ -28,7 +28,8 @@ Usage
 
 Sync options
   --claude <glob>      Claude Code logs (repeatable). Default: ~/.claude*/projects/**/*.jsonl
-  --codex <glob>       Codex logs (repeatable). Default: ~/.codex/sessions/**/*.jsonl
+  --codex <glob>       Codex logs (repeatable). Default: ~/.codex/sessions/**/*.jsonl and
+                       ~/.codex/archived_sessions/**/*.jsonl
   --exclude <text>     skip files whose path contains this text (repeatable, case-insensitive)
   --full               forget the byte offsets, re-read every file and rebuild the ledger
   --dry-run            read and count, but write nothing
