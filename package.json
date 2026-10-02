@@ -1,7 +1,7 @@
 {
   "name": "usageledger",
   "version": "0.1.1",
-  "description": "Token ledger for Claude Code and Codex. Reads the local session logs, stores no paths, and writes to SQLite, DuckDB or BigQuery.",
+  "description": "UsageLedger reads local Claude Code and Codex session logs, stores no paths, and writes token data to SQLite, DuckDB or BigQuery.",
   "type": "module",
   "bin": {
     "usageledger": "src/cli.js"

@@ -1,31 +1,31 @@
 # UsageLedger
 
-UsageLedger counts the tokens Claude Code and Codex use on your computer. It reads the session logs both tools already write, and it stores one row per model response in a database you own.
+UsageLedger counts the tokens that Claude Code and Codex use on your computer. It reads the session logs that both tools already write and stores one row per model response in a database you own.
 
 ## What it measures
 
-- Every Claude Code response in `~/.claude*/projects/**/*.jsonl` and every Codex token event in `~/.codex/sessions/**/*.jsonl` and `~/.codex/archived_sessions/**/*.jsonl`.
-- Input, cache read, cache write, output and reasoning tokens for each response.
-- The same five columns for both tools. Codex counts cached tokens inside its input count, so UsageLedger subtracts them. A Claude Code input token and a Codex input token then mean the same thing.
-- Totals per day, per model, per repo, per origin (the CLI, an SDK, `codex exec`) and per session.
-- Each response once. Claude Code writes one log line per content block of a response, and the early lines carry a partial output count. Codex sometimes writes the same token event twice. UsageLedger keeps one row per response with its final counts. Summing raw log lines instead can double the output total.
+- UsageLedger reads every Claude Code response from `~/.claude*/projects/**/*.jsonl` and every Codex token event from `~/.codex/sessions/**/*.jsonl` and `~/.codex/archived_sessions/**/*.jsonl`.
+- UsageLedger records input, cache read, cache write, output and reasoning tokens for each response.
+- UsageLedger uses the same five columns for both tools. Codex counts cached tokens inside its input count, so UsageLedger subtracts them. A Claude Code input token and a Codex input token then mean the same thing.
+- UsageLedger reports totals per day, per model, per repo, per origin (the CLI, an SDK, `codex exec`) and per session.
+- UsageLedger records each response once. Claude Code writes one log line per content block of a response, and the early lines carry a partial output count. Codex sometimes writes the same token event twice. UsageLedger keeps one row per response with its final counts. Summing raw log lines instead can double the output total.
 
 UsageLedger reads only files on your computer. It makes no network call, and it needs no API key.
 
 ## What it keeps
 
-UsageLedger stores no path from your computer by default.
+By default, UsageLedger stores no path from your computer.
 
-- The working directory of a session is stored as a salted hash. The salt is created once in `~/.usageledger/salt`, readable only by you. Sessions in one directory share a hash, and the hash cannot be turned back into the path.
-- The repo column holds only the base name of the git repository the session ran in, such as `billing-api`. Your home directory is stored as `home` and temporary directories as `tmp`, so your user name never lands in the ledger.
-- The sync state keeps a byte offset per log file, keyed by a salted hash of the file's path.
+- UsageLedger stores the working directory of a session as a salted hash. The salt is created once in `~/.usageledger/salt`, readable only by you. Sessions in one directory share a hash, and the hash cannot be turned back into the path.
+- The repo column holds only the base name of the git repository where the session ran, such as `billing-api`. UsageLedger stores your home directory as `home` and temporary directories as `tmp`, so your user name never lands in the ledger.
+- The sync state keeps a byte offset per log file and keys it by a salted hash of the file's path.
 - Message text is never stored.
 
-The `--raw-cwd` flag turns this off and also stores the full working directory.
+The `--raw-cwd` flag turns off path redaction and also stores the full working directory.
 
 ## Install
 
-UsageLedger needs Node.js 22.13 or later. It has no runtime dependencies.
+UsageLedger needs Node.js 22.13 or later and has no runtime dependencies.
 
 ```sh
 npm install -g usageledger
@@ -33,7 +33,7 @@ usageledger sync
 usageledger report
 ```
 
-You can also run it without installing it, with `npx usageledger sync`.
+You can also run UsageLedger without installing it, with `npx usageledger sync`.
 
 ## Sync
 
@@ -41,7 +41,7 @@ You can also run it without installing it, with `npx usageledger sync`.
 usageledger sync
 ```
 
-The first sync reads every log file. Each later sync reads only the bytes a file gained since the last one. A line that is still being written waits for the next sync. A file that got shorter is read again from the start.
+The first sync reads every log file. Each later sync reads only the bytes that a file gained since the last one. A line that is still being written waits for the next sync. If a file gets shorter, UsageLedger reads it again from the start.
 
 | Flag | What it does |
 |---|---|
@@ -53,7 +53,7 @@ The first sync reads every log file. Each later sync reads only the bytes a file
 | `--raw-cwd` | Also stores the full working directory. |
 | `--tz <zone>` | Uses this time zone for calendar days. The default is your computer's time zone. |
 
-Two config directories that link to one projects folder are read once, because UsageLedger follows each file to its real path. Codex moves a session's file to `archived_sessions` when you archive it. The moved file is read again, and its responses keep their row ids, so they count once.
+UsageLedger reads two config directories that link to one projects folder once because it follows each file to its real path. Codex moves a session's file to `archived_sessions` when you archive it. UsageLedger reads the moved file again, and its responses keep their row ids, so they count once.
 
 ## Report
 
@@ -91,7 +91,7 @@ claude-opus-4-1    Claude Code         1      2      5       4,500     350  5,35
 usageledger serve
 ```
 
-This serves a page at http://127.0.0.1:4477 with the same totals, a chart per day, ranked bars per model, repo and origin, and tables of sessions and days. It listens on your computer only, and the page loads nothing from the internet. Use `--port` and `--host` to change where it listens.
+The `usageledger serve` command serves a page at http://127.0.0.1:4477 with the same totals, a chart per day, ranked bars per model, repo and origin, and tables of sessions and days. The server listens on your computer only, and the page loads nothing from the internet. Use `--port` and `--host` to change where it listens.
 
 ## Next.js app
 
@@ -102,9 +102,9 @@ cd my-ledger && npm install && npm run dev
 
 The `--app` flag writes a Next.js app that reads your ledger on the server.
 
-- `--app console` writes the dense view: sentences on top, a chart per day, ranked bars, and sortable tables of sessions and days.
-- `--app simple` writes the plain view: a few sentences first, with the tables behind disclosures.
-- `--app both` writes both views, a welcome dialog on the first visit, and a footer switch between them. The choice is saved in the browser and in the `?view=` parameter.
+- The `--app console` flag writes the dense view with sentences on top, a chart per day, ranked bars, and sortable tables of sessions and days.
+- The `--app simple` flag writes the plain view with a few sentences first and the tables behind disclosures.
+- The `--app both` flag writes both views, a welcome dialog on the first visit, and a footer switch between them. The app saves the choice in the browser and in the `?view=` parameter.
 
 While your ledger is empty, the app shows a labeled example built from the sample logs in `examples/`.
 
@@ -133,11 +133,11 @@ With launchd on macOS, save this as `~/Library/LaunchAgents/com.example.usageled
 </plist>
 ```
 
-launchd starts jobs without your shell's PATH, so the job runs through a login shell.
+launchd starts jobs without your shell's PATH, so each job runs through a login shell.
 
 ## Sinks
 
-The ledger lives in SQLite by default. You can pick another sink with `--sink`, or once in `~/.usageledger/config.json`.
+The ledger uses SQLite by default. You can pick another sink with `--sink`, or set one in `~/.usageledger/config.json`.
 
 | Sink | Where the rows go | What it needs |
 |---|---|---|
@@ -145,9 +145,9 @@ The ledger lives in SQLite by default. You can pick another sink with `--sink`, 
 | `duckdb` | `~/.usageledger/ledger.duckdb` | The `@duckdb/node-api` package next to UsageLedger: `npm install -g usageledger @duckdb/node-api`. |
 | `bigquery` | The table you name with `--bq-table project:dataset.table` | The `bq` tool from the Google Cloud SDK, signed in. |
 
-A response that appears again keeps its largest counts. SQLite and DuckDB merge it on write. BigQuery loads are appends, so every BigQuery read query works on one row per `row_id`. `sync --full` drops and recreates the BigQuery table, which also works in the BigQuery sandbox. The table is partitioned by `day`.
+When a response appears again, UsageLedger keeps its largest counts. SQLite and DuckDB merge it on write. BigQuery loads are appends, so every BigQuery read query works on one row per `row_id`. `sync --full` drops and recreates the BigQuery table, which also works in the BigQuery sandbox. The table is partitioned by `day`.
 
-`usageledger schema` prints the BigQuery schema as JSON. `usageledger schema --sql` prints the SQLite table. The read queries are in `src/queries.js`, written once for all three sinks.
+The command `usageledger schema` prints the BigQuery schema as JSON. The command `usageledger schema --sql` prints the SQLite table. The read queries are in `src/queries.js`, written once for all three sinks.
 
 A config file holds the same options as the flags:
 
@@ -160,7 +160,7 @@ A config file holds the same options as the flags:
 }
 ```
 
-`USAGELEDGER_HOME` moves the whole folder, including the salt, the state and the default database.
+The `USAGELEDGER_HOME` variable moves the whole folder, including the salt, the state and the default database.
 
 ## Columns
 
@@ -193,7 +193,7 @@ Type declarations ship in `src/index.d.ts`.
 
 ## Sample logs
 
-`examples/` holds synthetic logs for both tools, with numbers small enough to add by hand. `examples/README.md` shows the arithmetic, and `examples/expected.json` holds the totals. The test suite syncs the sample logs and checks the ledger against those totals.
+The `examples/` directory holds synthetic logs for both tools, with numbers small enough to add by hand. The file `examples/README.md` shows the arithmetic, and the file `examples/expected.json` holds the totals. The test suite syncs the sample logs and checks the ledger against those totals.
 
 ## Development
 
@@ -203,7 +203,7 @@ npm test
 node scripts/scrub-gate.mjs
 ```
 
-`scripts/scrub-gate.mjs` fails on personal email addresses, maintainer home paths, internal project ids, account handles, key-shaped strings and bot-detection bypass code. CI runs it before the tests on every push.
+The script `scripts/scrub-gate.mjs` fails on personal email addresses, maintainer home paths, internal project ids, account handles, key-shaped strings and bot-detection bypass code. CI runs the script before the tests on every push.
 
 ## License
 
