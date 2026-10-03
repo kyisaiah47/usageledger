@@ -154,7 +154,9 @@ th[aria-sort='descending'] button::after { content: ' \2193'; }
 .welcome-body { padding: 22px 24px 24px; display: grid; gap: 14px; }
 .welcome-top { display: flex; justify-content: space-between; align-items: center; }
 .welcome-top .label { margin-left: 6px; }
-.welcome .close { border: 0; background: none; width: 40px; height: 40px; border-radius: 8px; cursor: pointer; color: var(--muted); }
+.welcome .close { display: grid; place-items: center; flex: none; width: 44px; height: 44px; padding: 0; border: 0; background: none; border-radius: 8px; cursor: pointer; color: var(--muted); }
+.welcome .close svg { display: block; }
+.welcome .close:focus-visible { outline-offset: -2px; }
 .welcome h2 { font-size: 24px; line-height: 1.2; }
 .welcome-figure { margin: 0; border: 1px solid var(--rule); border-radius: 10px; padding: 12px 14px; background: var(--bg); display: grid; gap: 4px; font-size: 14.5px; }
 .welcome-figure figcaption { font-size: 12px; font-weight: 600; color: var(--acc); }
