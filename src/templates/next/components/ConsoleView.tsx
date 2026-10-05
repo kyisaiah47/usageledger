@@ -133,15 +133,17 @@ export default function ConsoleView({ summary, example, win, query, sink, toggle
           ))}
         </nav>
       </header>
-      <p className="lede">
-        Tokens spent by Claude Code and Codex on this computer, per day, per model, per repo and per session. This view
-        counts tokens. It does not price them.
-      </p>
-      <p className="src">
-        {toggle}
+      {/* THE RAIL. The line directly under the header: the view toggle first, then where the ledger
+          lives and what it holds. It scrolls sideways in its own box when its cells do not fit. */}
+      <div className="src">
+        {toggle ? <span className="src-view">{toggle}</span> : null}
         <span>{sink} ledger</span>
         <span>{s.since} to {s.until}</span>
         <span>{n(s.rowCount)} responses in the ledger</span>
+      </div>
+      <p className="lede">
+        Tokens spent by Claude Code and Codex on this computer, per day, per model, per repo and per session. This view
+        counts tokens. It does not price them.
       </p>
 
       {example ? (
