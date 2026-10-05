@@ -22,6 +22,7 @@ test('--app both writes both views and the shell, with no welcome dialog', () =>
     'components/Mark.tsx',
     'components/SimpleView.tsx',
     'components/ViewShell.tsx',
+    'icons/mark.generated.ts',
     'lib/format.ts',
     'lib/ledger.ts',
     'lib/window.ts',
@@ -37,6 +38,10 @@ test('--app both writes both views and the shell, with no welcome dialog', () =>
   assert.match(read(out, 'components/ViewShell.tsx'), /usageledger:view/);
   assert.doesNotMatch(read(out, 'components/ViewShell.tsx'), /welcome/i);
   assert.match(read(out, 'app/page.tsx'), /toggle=\{<ViewToggle \/>\}/);
+  // The header mark renders the generated module, the same bytes as the package's own, so the
+  // scaffolded app paints the registry drawing and no hand-typed copy.
+  assert.match(read(out, 'components/Mark.tsx'), /from '@\/icons\/mark\.generated'/);
+  assert.equal(read(out, 'icons/mark.generated.ts'), fs.readFileSync(new URL('../src/icons/mark.generated.ts', import.meta.url), 'utf8'));
   for (const f of res.files) assert.doesNotMatch(read(out, f), /__APP_NAME__|__USAGELEDGER_VERSION__|__APP_MODE__/, f);
 });
 
