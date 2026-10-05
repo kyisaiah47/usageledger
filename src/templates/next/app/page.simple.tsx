@@ -12,7 +12,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
   return (
     <main>
       {ledger.error ? <p className="void error" role="alert">The ledger could not be read: {ledger.error}</p> : null}
-      <SimpleView summary={summary} example={example} win={win} query={query} sink={ledger.sink} />
+      <SimpleView summary={summary} example={example} win={win} query={query} />
       <footer className="site-foot">
         <div className="brand"><Mark size={18} /><span>UsageLedger</span></div>
       </footer>

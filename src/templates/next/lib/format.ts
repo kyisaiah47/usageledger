@@ -36,3 +36,11 @@ export function top(s: Summary, dim: 'model' | 'repo' | 'origin') {
   return { first: sorted[0] ?? null, all: sorted };
 }
 
+/** Two sentences read off a summary, for the welcome dialog's labeled example. */
+export function exampleLines(s: Summary): string[] {
+  const c = s.totals.claude_code;
+  const repo = top(s, 'repo').first;
+  const lines = [`Claude Code used ${M(c.total_tokens)} tokens in ${n(c.sessions)} sessions and wrote ${M(c.output_tokens)} of them.`];
+  if (repo) lines.push(`The repo that used the most was ${repo[0]}, with ${M(repo[1])}.`);
+  return lines;
+}

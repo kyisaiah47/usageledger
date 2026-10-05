@@ -1,13 +1,11 @@
 'use client';
 
-/* SIMPLE. The same ledger, read as a few sentences. The answer comes first, the schedule and the
- * full breakdown sit in a bento below it, and the counting rules that make the totals trustworthy
- * get their own band. The first action is the one command that fills the ledger. */
+/* SIMPLE. The same ledger, read as a few sentences. The answer comes first and the tables open
+ * on request. The first action is the one command that fills the ledger. */
 
 import { useId, useState, type ReactNode } from 'react';
 import type { Summary } from 'usageledger';
 import Mark from '@/components/Mark';
-import Waves from '@/components/Waves';
 import { M, TOOL, TOOLS, href, n, pct, top } from '@/lib/format';
 import { WINDOWS, type Win } from '@/lib/window';
 
@@ -66,7 +64,7 @@ function Sentences({ s }: { s: Summary }) {
 }
 
 function DaysTable({ s }: { s: Summary }) {
-  if (!s.daily.length) return <p className="void">No usage in this window.</p>;
+  if (!s.daily.length) return <p>No usage in this window.</p>;
   return (
     <div className="scroller">
       <table>
@@ -89,111 +87,67 @@ function DaysTable({ s }: { s: Summary }) {
   );
 }
 
-const AXES = [
-  { id: 'model', label: 'Models' },
-  { id: 'repo', label: 'Repos' },
-  { id: 'origin', label: 'Origins' },
-] as const;
-
-function AxisLedger({ s }: { s: Summary }) {
-  const groups = AXES.map((axis) => ({ ...axis, rows: top(s, axis.id).all }));
-  if (!groups.some((g) => g.rows.length)) return <p className="void">No rows in this window.</p>;
-  return (
-    <div className="sv-ledger">
-      {groups.map((g) => (
-        <div className="sv-grp" key={g.id}>
-          <span className="sv-grpk">{g.label}</span>
-          <ul>
-            {g.rows.length ? (
-              g.rows.slice(0, 6).map(([key, value]) => (
-                <li key={key}><code>{key}</code><span>{M(value)}</span></li>
-              ))
-            ) : (
-              <li className="sv-empty">None recorded</li>
-            )}
-          </ul>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function ScheduleTabs() {
-  const [tab, setTab] = useState<'cron' | 'launchd'>('cron');
-  return (
-    <div className="sv-sched">
-      <div className="sv-schedtabs" role="tablist" aria-label="Scheduler">
-        <span role="tab" aria-selected={tab === 'cron'} onClick={() => setTab('cron')}>cron</span>
-        <span role="tab" aria-selected={tab === 'launchd'} onClick={() => setTab('launchd')}>launchd</span>
-      </div>
-      <pre>
-        {tab === 'cron'
-          ? '*/30 * * * * npx --yes usageledger sync >> ~/.usageledger/sync.log 2>&1'
-          : '<key>StartInterval</key><integer>1800</integer>\n<string>npx --yes usageledger sync</string>'}
-      </pre>
-    </div>
-  );
-}
-
-export default function SimpleView({ summary, example, win, query, consoleHref, sink, toggle }: { summary: Summary; example: boolean; win: Win; query: Record<string, string>; consoleHref?: string; sink?: string; toggle?: ReactNode }) {
-  const s = summary;
-  const label = example ? 'The sample logs' : win === 'all' ? 'Everything in the ledger' : `The last ${win} days`;
+function WhereItWent({ s }: { s: Summary }) {
   const model = top(s, 'model');
   const repo = top(s, 'repo');
-
+  if (!model.first) return <p>Nothing was recorded in this window.</p>;
   return (
-    <div className="simple sv-a3">
-      <div className="sv-herozone">
-        <Waves />
-        <header className="simple-head sv-nav">
-          <div className="navl">
-            <div className="brand-lock"><div className="brand"><Mark /><span>UsageLedger</span></div></div>
-            <nav aria-label="Sections">
-              <a href="#window">Your window</a>
-              <a href="#ledger">Every row</a>
-              <a href="#how">Counting</a>
-            </nav>
-          </div>
-          <div className="sv-ctas">
-            {toggle}
-            <a className="sv-txt" href="https://github.com/kyisaiah47/usageledger">GitHub</a>
-            <a className="sv-btn" href="https://www.npmjs.com/package/usageledger">View on npm</a>
-          </div>
-        </header>
-
-        <section className="hero">
-          <div>
-            <h1>See where your Claude Code and Codex tokens went.</h1>
-            <p>
-              UsageLedger reads the session logs that Claude Code and Codex keep on this computer. It adds up the tokens each
-              tool used, per day, per model and per repo.
-            </p>
-            <p className="qualifier">It stores no file paths. Nothing leaves this computer.</p>
-          </div>
-          <div className="sv-cmdbox">
-            <div className="sv-cmdtop">
-              <span className="sv-dot" style={{ background: TOOL.claude_code.color }} />
-              <span className="sv-dot" style={{ background: TOOL.codex.color }} />
-              Reads Claude Code and Codex logs, then writes to a local ledger.
+    <>
+      <p>The model that used the most tokens was <code>{model.first[0]}</code>, with {M(model.first[1])}.</p>
+      {repo.first ? <p>The repo that used the most was {repo.first[0]}, with {M(repo.first[1])}.</p> : null}
+      <Disclosure label="every model and repo">
+        <div className="two">
+          {[['Models', model.all], ['Repos', repo.all]].map(([title, rows]) => (
+            <div key={title as string}>
+              <h4>{title as string}</h4>
+              <ul className="plain">
+                {(rows as [string, number][]).map(([k, v]) => (
+                  <li key={k}><span>{k}</span><span>{M(v)}</span></li>
+                ))}
+              </ul>
             </div>
-            <CopyCommand command="npx usageledger sync" />
-            <p className="small">Reload this page when it finishes.</p>
-            <div className="seg" role="group" aria-label="Window">
-              {WINDOWS.map((w) => (
-                <a key={w.id} href={href(query, { days: w.id })} aria-current={w.id === win ? 'page' : undefined}>{w.label}</a>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <div className="sv-strip">
-          <div>What UsageLedger reads and where it writes.</div>
-          <div><span className="sv-dot" style={{ background: TOOL.claude_code.color }} />Claude Code</div>
-          <div><span className="sv-dot" style={{ background: TOOL.codex.color }} />Codex</div>
-          <div><code>{sink ?? 'sqlite'}</code> ledger</div>
-          <div>No network call</div>
+          ))}
         </div>
-      </div>
+      </Disclosure>
+    </>
+  );
+}
+
+export default function SimpleView({ summary, example, win, query, consoleHref }: { summary: Summary; example: boolean; win: Win; query: Record<string, string>; consoleHref?: string }) {
+  const s = summary;
+  const label = example ? 'The sample logs' : win === 'all' ? 'Everything in the ledger' : `The last ${win} days`;
+  return (
+    <div className="simple">
+      <header className="simple-head">
+        <div className="brand"><Mark /><span>UsageLedger</span></div>
+        <nav aria-label="Sections">
+          <a href="#window">Your window</a>
+          <a href="#where">Where it went</a>
+          <a href="#next">Commands</a>
+        </nav>
+      </header>
+
+      <section className="hero">
+        <div>
+          <h1>See where your Claude Code and Codex tokens went.</h1>
+          <p>
+            UsageLedger reads the session logs that Claude Code and Codex keep on this computer. It adds up the tokens each
+            tool used, per day, per model and per repo.
+          </p>
+          <p className="qualifier">It stores no file paths. Nothing leaves this computer.</p>
+        </div>
+        <div className="action">
+          <h2>Read the newest logs</h2>
+          <p>Run this in a terminal. It reads only what the logs gained since the last run.</p>
+          <CopyCommand command="npx usageledger sync" />
+          <p className="small">Reload this page when it finishes.</p>
+          <div className="seg" role="group" aria-label="Window">
+            {WINDOWS.map((w) => (
+              <a key={w.id} href={href(query, { days: w.id })} aria-current={w.id === win ? 'page' : undefined}>{w.label}</a>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <section className="sect" id="window">
         <div className="sect-head">
@@ -201,81 +155,31 @@ export default function SimpleView({ summary, example, win, query, consoleHref, 
           <h2>{label}</h2>
           <p>{s.since} to {s.until}, {example ? 'from the sample logs that ship with UsageLedger' : 'read from the ledger on this computer'}.</p>
         </div>
-
-        <div className="sv-bento">
-          <article className="sv-cell sv-s6 sv-report">
-            <div className="sv-half">
-              <h3>What happened</h3>
-              {example ? <p className="example-tag">Example</p> : null}
-              <Sentences s={s} />
-            </div>
-            <div className="sv-half">
-              <h3>Where it went</h3>
-              {model.first ? (
-                <>
-                  <p>The model that used the most tokens was <code>{model.first[0]}</code>, with {M(model.first[1])}.</p>
-                  {repo.first ? <p>The repo that used the most was <code>{repo.first[0]}</code>, with {M(repo.first[1])}.</p> : null}
-                  <a className="sv-more" href="#ledger">Every model, repo and origin</a>
-                </>
-              ) : (
-                <p>Nothing was recorded in this window.</p>
-              )}
-            </div>
-          </article>
-
-          <article className="sv-cell sv-s4">
-            <h3>Keep it current</h3>
-            <p>Run the sync on a schedule. Each run reads only new bytes, so a run every 30 minutes is cheap.</p>
-            <div className="sv-viz">
-              <ScheduleTabs />
-            </div>
-          </article>
-
-          <article className="sv-cell sv-s2">
-            <h3>Per day</h3>
-            <p>Every day the ledger has a row for.</p>
+        <article className="card">
+          {example ? <p className="example-tag">Example</p> : null}
+          <Sentences s={s} />
+          <Disclosure label="each day">
             <DaysTable s={s} />
-          </article>
-        </div>
+          </Disclosure>
+          {example ? (
+            <p className="small">
+              This is an example built from the sample logs that ship with UsageLedger. Your numbers appear here after the first sync.
+            </p>
+          ) : null}
+        </article>
       </section>
 
-      <section className="sect" id="ledger">
+      <section className="sect" id="where">
         <div className="sect-head">
           <p className="label">Where it went</p>
-          <h2>Every model, repo and origin</h2>
+          <h2>Models and repos</h2>
           <p>A repo is the base name of the folder a session ran in. The full path is not stored unless you turn on <code>--raw-cwd</code>.</p>
         </div>
-        {example ? <p className="example-tag">Example</p> : null}
-        <AxisLedger s={s} />
+        <article className="card">
+          {example ? <p className="example-tag">Example</p> : null}
+          <WhereItWent s={s} />
+        </article>
       </section>
-
-      <div className="sv-darkband">
-        <div className="sv-darkhead">
-          <p className="label">Counting</p>
-          <h2>How UsageLedger counts each response once.</h2>
-          <p>Claude Code writes one log line per content block of a response, and the early lines carry a partial output count.</p>
-        </div>
-        <div className="sv-dgrid">
-          <div className="sv-dcard">
-            <h3>Content blocks</h3>
-            <p>Claude Code writes one log line per content block of a response.</p>
-            <ul>
-              <li><span>Two lines for one response</span><span>coalesced</span></li>
-              <li><span>A partial output count on the early line</span><span>replaced</span></li>
-              <li><span>The same response in a subagent file</span><span>kept once</span></li>
-            </ul>
-          </div>
-          <div className="sv-dcard">
-            <h3>Cache tokens</h3>
-            <p>Codex counts cached tokens inside its input count, so UsageLedger subtracts them.</p>
-            <ul>
-              <li><span>Cached tokens inside Codex input</span><span>subtracted</span></li>
-              <li><span>A repeated Codex token event</span><span>skipped</span></li>
-              <li><span>Claude Code and Codex input</span><span>mean the same thing</span></li>
-            </ul>
-          </div>
-        </div>
-      </div>
 
       <section className="sect">
         <div className="sect-head">

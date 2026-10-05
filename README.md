@@ -104,7 +104,7 @@ The `--app` flag writes a Next.js app that reads your ledger on the server.
 
 - The `--app console` flag writes the dense view with sentences on top, a chart per day, ranked bars, and sortable tables of sessions and days.
 - The `--app simple` flag writes the plain view with a few sentences first and the tables behind disclosures.
-- The `--app both` flag writes both views and adds a Console / Simple toggle. The toggle is the first item on the Console view's source line and sits beside the name in the Simple view. The app saves the choice in the browser and in the `?view=` parameter.
+- The `--app both` flag writes both views, a welcome dialog on the first visit, and a footer switch between them. The app saves the choice in the browser and in the `?view=` parameter.
 
 While your ledger is empty, the app shows a labeled example built from the sample logs in `examples/`.
 

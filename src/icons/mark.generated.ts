@@ -1,12 +1,15 @@
 /* GENERATED FILE. DO NOT EDIT, AND DO NOT DRAW THIS MARK ANYWHERE ELSE.
  *
- * A sync script writes this file from one shared mark registry. The registry holds the only
- * source drawing of this app's mark. The browser tab, this app's header and the product tile
- * on the studio site all use that one drawing. To change the mark, edit it in the registry and
- * run the sync again. Edits made here are overwritten.
+ * Written by compound-ops/brand/app-icons/sync.mjs out of
+ * compound-ops/brand/app-icons/icons/usageledger.svg, which is the estate's ONE source for this
+ * app's mark. The browser tab, this app's own header and the product tile on the studio site
+ * are the same drawing because all three are fed from that file. To change the mark, change it
+ * there and run:
  *
- * A gate fails the nightly check when this file stops matching the registry. It also fails
- * when a component draws the mark by hand.
+ *   node ~/CompoundLabs/compound-ops/brand/app-icons/sync.mjs
+ *
+ * compound-ops/tools/gates/one-logo-per-app.mjs fails the nightly sweep when this file stops
+ * matching the registry, or when a component starts drawing the mark by hand again.
  */
 export const MARK_SLUG = "usageledger";
 export const MARK_VIEWBOX = "0 0 32 32";

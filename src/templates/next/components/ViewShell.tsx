@@ -1,16 +1,19 @@
 'use client';
 
-/* VIEW SHELL. Two views of one ledger and a Console / Simple toggle that each view draws by its
- * name or in its rail.
+/* VIEW SHELL. Two views of one ledger, a first-visit welcome that explains them, and a footer
+ * switch that stays on every page.
  *
  * The view comes from ?view= first, then the saved choice, then Console. Choosing a view saves it
  * and rewrites ?view= in place, so the window and other parameters survive the switch. Only one
- * view is mounted at a time. */
+ * view is mounted at a time. The welcome opens on a first visit unless it was turned off, or the
+ * URL carries ?welcome=0 for this visit. Start here reopens it either way. */
 
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import Mark from '@/components/Mark';
 
 type View = 'console' | 'simple';
 const VIEW_KEY = 'usageledger:view';
+const WELCOME_KEY = 'usageledger:welcome-off';
 
 const read = (k: string) => {
   try {
@@ -19,35 +22,103 @@ const read = (k: string) => {
     return null;
   }
 };
-const write = (k: string, v: string) => {
+const write = (k: string, v: string | null) => {
   try {
-    window.localStorage.setItem(k, v);
+    if (v == null) window.localStorage.removeItem(k);
+    else window.localStorage.setItem(k, v);
   } catch {
     // storage blocked; the choice lasts for this page only
   }
 };
 
-const ViewContext = createContext<{ view: View; choose: (v: View) => void } | null>(null);
+function Welcome({ open, onClose, onChoose, example }: { open: boolean; onClose: () => void; onChoose: (v: View) => void; example: string[] }) {
+  const ref = useRef<HTMLDialogElement>(null);
+  const [state, setState] = useState<'open' | 'closing' | 'closed'>('closed');
+  const [off, setOff] = useState(false);
 
-export function ViewToggle() {
-  const ctx = useContext(ViewContext);
-  if (!ctx) return null;
+  useEffect(() => setOff(read(WELCOME_KEY) === '1'), [open]);
+
+  useEffect(() => {
+    const d = ref.current;
+    if (!d) return;
+    if (open && !d.open) {
+      d.showModal();
+      setState('open');
+    }
+    if (!open && d.open) {
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      setState('closing');
+      const t = setTimeout(() => {
+        d.close();
+        setState('closed');
+      }, reduce ? 0 : 220);
+      return () => clearTimeout(t);
+    }
+  }, [open]);
+
   return (
-    <div className="view-toggle" role="group" aria-label="Page view">
-      <button type="button" aria-pressed={ctx.view === 'console'} onClick={() => ctx.choose('console')} title="Console view">
-        <svg viewBox="0 0 256 256" aria-hidden="true"><path d="M128,128a8,8,0,0,1-3,6.25l-40,32a8,8,0,1,1-10-12.5L107.19,128,75,102.25a8,8,0,1,1,10-12.5l40,32A8,8,0,0,1,128,128Zm48,24H136a8,8,0,0,0,0,16h40a8,8,0,0,0,0-16Zm56-96V200a16,16,0,0,1-16,16H40a16,16,0,0,1-16-16V56A16,16,0,0,1,40,40H216A16,16,0,0,1,232,56ZM216,200V56H40V200H216Z" /></svg>
-        Console
-      </button>
-      <button type="button" aria-pressed={ctx.view === 'simple'} onClick={() => ctx.choose('simple')} title="Simple view">
-        <svg viewBox="0 0 256 256" aria-hidden="true"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm0,160H40V56H216V200ZM184,96a8,8,0,0,1-8,8H80a8,8,0,0,1,0-16h96A8,8,0,0,1,184,96Zm0,32a8,8,0,0,1-8,8H80a8,8,0,0,1,0-16h96A8,8,0,0,1,184,128Zm0,32a8,8,0,0,1-8,8H80a8,8,0,0,1,0-16h96A8,8,0,0,1,184,160Z" /></svg>
-        Simple
-      </button>
-    </div>
+    <dialog
+      ref={ref}
+      className="welcome"
+      data-state={state}
+      aria-labelledby="welcome-title"
+      onCancel={(e) => {
+        e.preventDefault();
+        onClose();
+      }}
+      onClick={(e) => {
+        if (e.target === ref.current) onClose();
+      }}
+    >
+      <div className="welcome-body">
+        <div className="welcome-top">
+          <div className="brand"><Mark size={22} /><span>UsageLedger</span><span className="label">Start here</span></div>
+          <button type="button" className="close" onClick={onClose} aria-label="Close">
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.6" /></svg>
+          </button>
+        </div>
+        <h2 id="welcome-title">Where did your Claude Code and Codex tokens go?</h2>
+        <p>
+          Both tools write a log of every session on this computer. UsageLedger reads those logs and adds up the tokens per day,
+          per model and per repo, without storing any file path.
+        </p>
+        <figure className="welcome-figure">
+          <figcaption>Example</figcaption>
+          {example.map((line) => <p key={line}>{line}</p>)}
+        </figure>
+        <div className="welcome-choices">
+          <button type="button" onClick={() => onChoose('console')}>
+            <b>Console</b>
+            <span>See more at once.</span>
+            <small>Charts, tables and every session on one screen.</small>
+          </button>
+          <button type="button" onClick={() => onChoose('simple')}>
+            <b>Simple</b>
+            <span>Start with the essentials.</span>
+            <small>A few sentences, with details when you open them.</small>
+          </button>
+        </div>
+        <p className="small">You can switch anytime.</p>
+        <label className="check">
+          <input
+            type="checkbox"
+            checked={off}
+            onChange={(e) => {
+              setOff(e.target.checked);
+              write(WELCOME_KEY, e.target.checked ? '1' : null);
+            }}
+          />
+          <span>Don&apos;t open this when I come back</span>
+        </label>
+      </div>
+    </dialog>
   );
 }
 
-export default function ViewShell({ initial, fromUrl, console: consoleView, simple }: { initial: View; fromUrl: boolean; console: ReactNode; simple: ReactNode }) {
+export default function ViewShell({ initial, fromUrl, console: consoleView, simple, example }: { initial: View; fromUrl: boolean; console: ReactNode; simple: ReactNode; example: string[] }) {
   const [view, setView] = useState<View>(initial);
+  const [welcome, setWelcome] = useState(false);
+  const opener = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     if (fromUrl) write(VIEW_KEY, initial);
@@ -55,6 +126,8 @@ export default function ViewShell({ initial, fromUrl, console: consoleView, simp
       const saved = read(VIEW_KEY);
       if (saved === 'simple' || saved === 'console') setView(saved);
     }
+    const params = new URLSearchParams(window.location.search);
+    if (read(WELCOME_KEY) !== '1' && params.get('welcome') !== '0') setWelcome(true);
   }, [fromUrl, initial]);
 
   const choose = useCallback((v: View) => {
@@ -65,9 +138,40 @@ export default function ViewShell({ initial, fromUrl, console: consoleView, simp
     window.history.replaceState(null, '', url);
   }, []);
 
+  const close = useCallback(() => {
+    setWelcome(false);
+    opener.current?.focus();
+  }, []);
+
   return (
-    <ViewContext.Provider value={{ view, choose }}>
-      <div data-view={view}>{view === 'simple' ? simple : consoleView}</div>
-    </ViewContext.Provider>
+    <div data-view={view}>
+      {view === 'simple' ? simple : consoleView}
+      <footer className="site-foot">
+        <div className="brand"><Mark size={18} /><span>UsageLedger</span></div>
+        <div className="foot-controls" role="group" aria-label="View">
+          <button type="button" aria-pressed={view === 'console'} onClick={() => choose('console')}>Console</button>
+          <button type="button" aria-pressed={view === 'simple'} onClick={() => choose('simple')}>Simple</button>
+          <button
+            type="button"
+            className="start"
+            onClick={(e) => {
+              opener.current = e.currentTarget;
+              setWelcome(true);
+            }}
+          >
+            Start here
+          </button>
+        </div>
+      </footer>
+      <Welcome
+        example={example}
+        open={welcome}
+        onClose={close}
+        onChoose={(v) => {
+          choose(v);
+          close();
+        }}
+      />
+    </div>
   );
 }

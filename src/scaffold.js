@@ -1,7 +1,7 @@
 // `usageledger init --app console|simple|both` writes a Next.js app that reads the local ledger.
 //   console  the dense view: per-day chart, ranked bars, sessions and days tables
 //   simple   the plain view: a few sentences first, details behind disclosures
-//   both     both views, with a Console / Simple toggle in each view's rail or beside its name
+//   both     both views, a first-visit welcome dialog and a footer switch between them
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';

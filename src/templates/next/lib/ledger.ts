@@ -38,6 +38,7 @@ export async function loadLedger(win: Win): Promise<Ledger> {
   return { win, summary, error, example, sink };
 }
 
+export { exampleSummary };
 
 /** What the page shows: the ledger, or the labeled example while the ledger is empty. */
 export function shown(l: Ledger): { summary: Summary; example: boolean } {

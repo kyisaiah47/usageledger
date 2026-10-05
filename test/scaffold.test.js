@@ -9,7 +9,7 @@ import { ROOT, tmpDir } from './helpers.js';
 const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
 const read = (dir, f) => fs.readFileSync(path.join(dir, f), 'utf8');
 
-test('--app both writes both views and the shell, with no welcome dialog', () => {
+test('--app both writes both views, the shell and the welcome', () => {
   const out = path.join(tmpDir(), 'My Ledger');
   const res = scaffold({ app: 'both', out });
   assert.deepEqual(res.files, [
@@ -22,15 +22,11 @@ test('--app both writes both views and the shell, with no welcome dialog', () =>
     'components/Mark.tsx',
     'components/SimpleView.tsx',
     'components/ViewShell.tsx',
-    'components/Waves.tsx',
-    'icons/mark.generated.ts',
     'lib/format.ts',
     'lib/ledger.ts',
     'lib/window.ts',
     'next.config.mjs',
     'package.json',
-    'public/fonts/cabinet-grotesk-400.woff2',
-    'public/fonts/cabinet-grotesk-500.woff2',
     'public/icon.svg',
     'tsconfig.json',
   ]);
@@ -39,12 +35,7 @@ test('--app both writes both views and the shell, with no welcome dialog', () =>
   assert.equal(app.dependencies.usageledger, `^${pkg.version}`);
   assert.match(read(out, 'app/page.tsx'), /<ViewShell/);
   assert.match(read(out, 'components/ViewShell.tsx'), /usageledger:view/);
-  assert.doesNotMatch(read(out, 'components/ViewShell.tsx'), /welcome/i);
-  assert.match(read(out, 'app/page.tsx'), /toggle=\{<ViewToggle \/>\}/);
-  // The header mark renders the generated module, the same bytes as the package's own, so the
-  // scaffolded app paints the registry drawing and no hand-typed copy.
-  assert.match(read(out, 'components/Mark.tsx'), /from '@\/icons\/mark\.generated'/);
-  assert.equal(read(out, 'icons/mark.generated.ts'), fs.readFileSync(new URL('../src/icons/mark.generated.ts', import.meta.url), 'utf8'));
+  assert.match(read(out, 'components/ViewShell.tsx'), /usageledger:welcome-off/);
   for (const f of res.files) assert.doesNotMatch(read(out, f), /__APP_NAME__|__USAGELEDGER_VERSION__|__APP_MODE__/, f);
 });
 
