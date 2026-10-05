@@ -113,13 +113,13 @@ function WhereItWent({ s }: { s: Summary }) {
   );
 }
 
-export default function SimpleView({ summary, example, win, query, consoleHref }: { summary: Summary; example: boolean; win: Win; query: Record<string, string>; consoleHref?: string }) {
+export default function SimpleView({ summary, example, win, query, consoleHref, toggle }: { summary: Summary; example: boolean; win: Win; query: Record<string, string>; consoleHref?: string; toggle?: ReactNode }) {
   const s = summary;
   const label = example ? 'The sample logs' : win === 'all' ? 'Everything in the ledger' : `The last ${win} days`;
   return (
     <div className="simple">
       <header className="simple-head">
-        <div className="brand"><Mark /><span>UsageLedger</span></div>
+        <div className="brand-lock"><div className="brand"><Mark /><span>UsageLedger</span></div>{toggle}</div>
         <nav aria-label="Sections">
           <a href="#window">Your window</a>
           <a href="#where">Where it went</a>

@@ -82,7 +82,7 @@ function Table<T>({ rows, cols, rowKey, initial, empty }: { rows: T[]; cols: Col
 
 const Chip = ({ tool }: { tool: Tool }) => <span className="chip" style={{ color: TOOL[tool].color }}>{TOOL[tool].label}</span>;
 
-export default function ConsoleView({ summary, example, win, query, sink }: { summary: Summary; example: boolean; win: Win; query: Record<string, string>; sink: string }) {
+export default function ConsoleView({ summary, example, win, query, sink, toggle }: { summary: Summary; example: boolean; win: Win; query: Record<string, string>; sink: string; toggle?: ReactNode }) {
   const [dim, setDim] = useState<Dim>('model');
   const [metric, setMetric] = useState<Metric>('total_tokens');
   const [sec, setSec] = useState<'sessions' | 'days' | 'ranked'>('sessions');
@@ -138,6 +138,7 @@ export default function ConsoleView({ summary, example, win, query, sink }: { su
         counts tokens. It does not price them.
       </p>
       <p className="src">
+        {toggle}
         <span>{sink} ledger</span>
         <span>{s.since} to {s.until}</span>
         <span>{n(s.rowCount)} responses in the ledger</span>

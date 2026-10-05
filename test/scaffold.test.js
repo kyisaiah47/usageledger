@@ -9,7 +9,7 @@ import { ROOT, tmpDir } from './helpers.js';
 const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
 const read = (dir, f) => fs.readFileSync(path.join(dir, f), 'utf8');
 
-test('--app both writes both views, the shell and the welcome', () => {
+test('--app both writes both views and the shell, with no welcome dialog', () => {
   const out = path.join(tmpDir(), 'My Ledger');
   const res = scaffold({ app: 'both', out });
   assert.deepEqual(res.files, [
@@ -35,7 +35,8 @@ test('--app both writes both views, the shell and the welcome', () => {
   assert.equal(app.dependencies.usageledger, `^${pkg.version}`);
   assert.match(read(out, 'app/page.tsx'), /<ViewShell/);
   assert.match(read(out, 'components/ViewShell.tsx'), /usageledger:view/);
-  assert.match(read(out, 'components/ViewShell.tsx'), /usageledger:welcome-off/);
+  assert.doesNotMatch(read(out, 'components/ViewShell.tsx'), /welcome/i);
+  assert.match(read(out, 'app/page.tsx'), /toggle=\{<ViewToggle \/>\}/);
   for (const f of res.files) assert.doesNotMatch(read(out, f), /__APP_NAME__|__USAGELEDGER_VERSION__|__APP_MODE__/, f);
 });
 
