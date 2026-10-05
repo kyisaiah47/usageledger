@@ -19,7 +19,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
         initial={view ?? 'console'}
         fromUrl={view != null}
         console={<ConsoleView summary={summary} example={example} win={win} query={query} sink={ledger.sink} toggle={<ViewToggle />} />}
-        simple={<SimpleView summary={summary} example={example} win={win} query={query} consoleHref={href(query, { view: 'console' })} toggle={<ViewToggle />} />}
+        simple={<SimpleView summary={summary} example={example} win={win} query={query} consoleHref={href(query, { view: 'console' })} sink={ledger.sink} toggle={<ViewToggle />} />}
       />
     </main>
   );
