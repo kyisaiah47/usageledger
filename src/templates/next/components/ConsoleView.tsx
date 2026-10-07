@@ -82,7 +82,7 @@ function Table<T>({ rows, cols, rowKey, initial, empty }: { rows: T[]; cols: Col
 
 const Chip = ({ tool }: { tool: Tool }) => <span className="chip" style={{ color: TOOL[tool].color }}>{TOOL[tool].label}</span>;
 
-export default function ConsoleView({ summary, example, win, query, sink }: { summary: Summary; example: boolean; win: Win; query: Record<string, string>; sink: string }) {
+export default function ConsoleView({ summary, example, win, query, sink, toggle }: { summary: Summary; example: boolean; win: Win; query: Record<string, string>; sink: string; toggle?: ReactNode }) {
   const [dim, setDim] = useState<Dim>('model');
   const [metric, setMetric] = useState<Metric>('total_tokens');
   const [sec, setSec] = useState<'sessions' | 'days' | 'ranked'>('sessions');
@@ -133,14 +133,17 @@ export default function ConsoleView({ summary, example, win, query, sink }: { su
           ))}
         </nav>
       </header>
-      <p className="lede">
-        Tokens spent by Claude Code and Codex on this computer, per day, per model, per repo and per session. This view
-        counts tokens. It does not price them.
-      </p>
-      <p className="src">
+      {/* THE RAIL. The line directly under the header: the view toggle first, then where the ledger
+          lives and what it holds. It scrolls sideways in its own box when its cells do not fit. */}
+      <div className="src">
+        {toggle ? <span className="src-view">{toggle}</span> : null}
         <span>{sink} ledger</span>
         <span>{s.since} to {s.until}</span>
         <span>{n(s.rowCount)} responses in the ledger</span>
+      </div>
+      <p className="lede">
+        Tokens spent by Claude Code and Codex on this computer, per day, per model, per repo and per session. This view
+        counts tokens. It does not price them.
       </p>
 
       {example ? (
