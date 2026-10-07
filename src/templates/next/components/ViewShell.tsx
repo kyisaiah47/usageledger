@@ -60,6 +60,8 @@ export default function ViewShell({ initial, fromUrl, console: consoleView, simp
   const choose = useCallback((v: View) => {
     setView(v);
     write(VIEW_KEY, v);
+    /* Switching views always starts the reader at the top of the page. */
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
     const url = new URL(window.location.href);
     url.searchParams.set('view', v);
     window.history.replaceState(null, '', url);
@@ -67,7 +69,7 @@ export default function ViewShell({ initial, fromUrl, console: consoleView, simp
 
   return (
     <ViewContext.Provider value={{ view, choose }}>
-      <div data-view={view}>{view === 'simple' ? simple : consoleView}</div>
+      <div className="site-surface" data-view={view}>{view === 'simple' ? simple : consoleView}</div>
     </ViewContext.Provider>
   );
 }

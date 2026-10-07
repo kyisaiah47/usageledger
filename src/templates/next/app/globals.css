@@ -156,7 +156,7 @@ th[aria-sort='descending'] button::after { content: ' \2193'; }
 
 .simple-head.sv-nav { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; margin-top: 14px; padding: 10px 16px; border: 1px solid var(--sv-line); border-radius: 12px; background: var(--sv-panel); font-size: 17px; }
 .sv-nav .navl { display: flex; align-items: center; gap: 36px; min-width: 0; }
-.sv-nav .brand { font-family: var(--sv-disp); font-weight: 700; font-size: 18px; letter-spacing: -0.01em; }
+.sv-nav .brand { color: inherit; text-decoration: none; font-family: var(--sv-disp); font-weight: 700; font-size: 18px; letter-spacing: -0.01em; }
 .sv-nav nav { display: flex; gap: 22px; font-size: 14.5px; color: var(--sv-dim); }
 .sv-nav nav a { text-decoration: none; color: inherit; }
 .sv-nav nav a:hover { color: var(--sv-ink); }
@@ -174,10 +174,11 @@ th[aria-sort='descending'] button::after { content: ' \2193'; }
 .sv-cmdbox { width: 100%; margin: 30px auto 0; background: var(--sv-panel); border: 1px solid var(--sv-line); border-radius: 14px; box-shadow: 0 1px 0 rgba(20, 15, 5, 0.03), 0 16px 40px -22px rgba(40, 30, 10, 0.3); text-align: left; display: grid; gap: 0; overflow: hidden; }
 .sv-cmdtop { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--sv-line); background: #fafaf7; font-size: 12.5px; color: var(--sv-dim); }
 .sv-dot { width: 8px; height: 8px; border-radius: 2px; flex: none; display: inline-block; }
-.sv-cmdbox .command { background: none; border: 0; border-radius: 0; padding: 14px; }
+.hero > .sv-cmdbox { justify-items: stretch; }
+.sv-cmdbox .command { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: none; border: 0; border-radius: 0; padding: 14px; }
 .sv-cmdbox .command code { font-size: 14.5px; }
 .sv-cmdbox .command button { border-radius: 7px; }
-.sv-cmdbox .small { padding: 0 14px; }
+.hero > .sv-cmdbox > p.small { margin-top: 0; padding: 0 14px; font-size: 14px; color: var(--sv-dim); }
 .sv-cmdbox .seg { margin: 14px; justify-self: start; }
 
 .sv-strip { display: grid; grid-template-columns: 1.3fr repeat(4, 1fr); border-top: 1px solid var(--sv-line); }

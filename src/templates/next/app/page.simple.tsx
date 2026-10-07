@@ -1,6 +1,5 @@
-import SimpleView from '@/components/SimpleView';
+import SimpleView, { SimpleMark } from '@/components/SimpleView';
 import { flatQuery, loadLedger, parseWindow, shown } from '@/lib/ledger';
-import Mark from '@/components/Mark';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,7 +13,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
       {ledger.error ? <p className="void error" role="alert">The ledger could not be read: {ledger.error}</p> : null}
       <SimpleView summary={summary} example={example} win={win} query={query} sink={ledger.sink} />
       <footer className="site-foot">
-        <div className="brand"><Mark size={18} /><span>UsageLedger</span></div>
+        <div className="brand"><SimpleMark size={18} /><span>UsageLedger</span></div>
       </footer>
     </main>
   );

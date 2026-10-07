@@ -6,10 +6,15 @@
 
 import { useId, useState, type ReactNode } from 'react';
 import type { Summary } from 'usageledger';
-import Mark from '@/components/Mark';
+import { MARK_VIEWBOX, markGlyph } from '@/icons/mark.generated';
 import Waves from '@/components/Waves';
 import { M, TOOL, TOOLS, href, n, pct, top } from '@/lib/format';
 import { WINDOWS, type Win } from '@/lib/window';
+
+/** The mark on the light Simple ground: the registry glyph without its dark plate. */
+export function SimpleMark({ size = 26 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox={MARK_VIEWBOX} aria-hidden="true" focusable="false" dangerouslySetInnerHTML={{ __html: markGlyph() }} />;
+}
 
 export function Disclosure({ label, children }: { label: string; children: ReactNode }) {
   const [open, setOpen] = useState(false);
@@ -147,7 +152,10 @@ export default function SimpleView({ summary, example, win, query, consoleHref, 
         <Waves />
         <header className="simple-head sv-nav">
           <div className="navl">
-            <div className="brand-lock"><div className="brand"><Mark /><span>UsageLedger</span></div></div>
+            <div className="brand-lock">
+              <a className="brand" href="/"><SimpleMark /><span>UsageLedger</span></a>
+              {toggle}
+            </div>
             <nav aria-label="Sections">
               <a href="#window">Your window</a>
               <a href="#ledger">Every row</a>
@@ -155,7 +163,6 @@ export default function SimpleView({ summary, example, win, query, consoleHref, 
             </nav>
           </div>
           <div className="sv-ctas">
-            {toggle}
             <a className="sv-txt" href="https://github.com/kyisaiah47/usageledger">GitHub</a>
             <a className="sv-btn" href="https://www.npmjs.com/package/usageledger">View on npm</a>
           </div>
